@@ -12,7 +12,7 @@
 #include <stdexcept>
 #include <vector>
 
-#include "incbin.h"
+#include "shader_manager.hpp"
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -28,9 +28,6 @@ const bool enableValidationLayers = false;
 #else
 const bool enableValidationLayers = true;
 #endif
-
-INCBIN(vertShaderCode, "shaders/shader.vert.spv");
-INCBIN(fragShaderCode, "shaders/shader.frag.spv");
 
 VkResult CreateDebugUtilsMessengerEXT(
   VkInstance instance,
@@ -495,8 +492,8 @@ private:
 
     void createGraphicsPipeline()
     {
-        VkShaderModule vertShaderModule = createShaderModule(gvertShaderCodeData, gvertShaderCodeSize);
-        VkShaderModule fragShaderModule = createShaderModule(gfragShaderCodeData, gfragShaderCodeSize);
+        VkShaderModule vertShaderModule = createShaderModule(shaders::getVertexShader());
+        VkShaderModule fragShaderModule = createShaderModule(shaders::getFragmentShader());
 
         VkPipelineShaderStageCreateInfo vertShaderStageInfo{};
         vertShaderStageInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -780,12 +777,12 @@ private:
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
-    VkShaderModule createShaderModule(const unsigned char* code, size_t size)
+    VkShaderModule createShaderModule(shaders::Res shader)
     {
         VkShaderModuleCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-        createInfo.codeSize = size;
-        createInfo.pCode = reinterpret_cast<const uint32_t*>(code);
+        createInfo.codeSize = shader.size;
+        createInfo.pCode = reinterpret_cast<const uint32_t*>(shader.data);
 
         VkShaderModule shaderModule;
         if (vkCreateShaderModule(device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
