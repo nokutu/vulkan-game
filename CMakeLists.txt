@@ -23,7 +23,7 @@ add_subdirectory(shaders)
 
 add_executable(VulkanGame
         src/main.cpp
-        src/debug.cpp)
+        src/debug.cpp src/window.cpp src/window.hpp)
 
 target_include_directories(VulkanGame PUBLIC ${Vulkan_INCLUDE_DIRS})
 

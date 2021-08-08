@@ -1,5 +1,4 @@
-#define GLFW_INCLUDE_VULKAN
-#include <GLFW/glfw3.h>
+
 
 #include <algorithm>
 #include <cstdint>
@@ -14,9 +13,7 @@
 
 #include "debug.hpp"
 #include "shader_manager.hpp"
-
-const uint32_t WIDTH = 800;
-const uint32_t HEIGHT = 600;
+#include "window.hpp"
 
 const int MAX_FRAMES_IN_FLIGHT = 2;
 
@@ -44,18 +41,17 @@ class HelloTriangleApplication
 public:
     void run()
     {
-        initWindow();
+        window.init();
         initVulkan();
         mainLoop();
         cleanup();
     }
 
 private:
-    GLFWwindow* window;
+    Window window;
 
     VkInstance instance;
     DebugMessenger debugMessenger;
-    VkSurfaceKHR surface;
 
     VkPhysicalDevice physicalDevice = VK_NULL_HANDLE;
     VkDevice device;
@@ -83,23 +79,13 @@ private:
     std::vector<VkFence> imagesInFlight;
     size_t currentFrame = 0;
 
-    void initWindow()
-    {
-        glfwInit();
-
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-
-        window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
-    }
-
     void initVulkan()
     {
         createInstance();
 #ifndef NDEBUG
         debugMessenger.setupDebugMessenger(instance);
 #endif
-        createSurface();
+        window.createSurface(instance);
         pickPhysicalDevice();
         createLogicalDevice();
         createSwapChain();
@@ -114,7 +100,7 @@ private:
 
     void mainLoop()
     {
-        while (!glfwWindowShouldClose(window))
+        while (!window.shouldClose())
         {
             glfwPollEvents();
             drawFrame();
@@ -155,10 +141,10 @@ private:
         debugMessenger.destroy(instance, nullptr);
 #endif
 
-        vkDestroySurfaceKHR(instance, surface, nullptr);
+        vkDestroySurfaceKHR(instance, window.surface, nullptr);
         vkDestroyInstance(instance, nullptr);
 
-        glfwDestroyWindow(window);
+        window.destroy();
 
         glfwTerminate();
     }
@@ -204,14 +190,6 @@ private:
         if (vkCreateInstance(&createInfo, nullptr, &instance) != VK_SUCCESS)
         {
             throw std::runtime_error("failed to create instance!");
-        }
-    }
-
-    void createSurface()
-    {
-        if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
-        {
-            throw std::runtime_error("failed to create window surface!");
         }
     }
 
@@ -309,7 +287,7 @@ private:
 
         VkSwapchainCreateInfoKHR createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        createInfo.surface = surface;
+        createInfo.surface = window.surface;
 
         createInfo.minImageCount = imageCount;
         createInfo.imageFormat = surfaceFormat.format;
@@ -763,8 +741,7 @@ private:
         }
         else
         {
-            int width, height;
-            glfwGetFramebufferSize(window, &width, &height);
+            auto [width, height] = window.getFramebufferSize();
 
             VkExtent2D actualExtent = { static_cast<uint32_t>(width), static_cast<uint32_t>(height) };
 
@@ -781,25 +758,26 @@ private:
     {
         SwapChainSupportDetails details;
 
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &details.capabilities);
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, window.surface, &details.capabilities);
 
         uint32_t formatCount;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, nullptr);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(device, window.surface, &formatCount, nullptr);
 
         if (formatCount != 0)
         {
             details.formats.resize(formatCount);
-            vkGetPhysicalDeviceSurfaceFormatsKHR(device, surface, &formatCount, details.formats.data());
+            vkGetPhysicalDeviceSurfaceFormatsKHR(
+              device, window.surface, &formatCount, details.formats.data());
         }
 
         uint32_t presentModeCount;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(device, surface, &presentModeCount, nullptr);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(device, window.surface, &presentModeCount, nullptr);
 
         if (presentModeCount != 0)
         {
             details.presentModes.resize(presentModeCount);
             vkGetPhysicalDeviceSurfacePresentModesKHR(
-              device, surface, &presentModeCount, details.presentModes.data());
+              device, window.surface, &presentModeCount, details.presentModes.data());
         }
 
         return details;
@@ -858,7 +836,7 @@ private:
             }
 
             VkBool32 presentSupport = false;
-            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, surface, &presentSupport);
+            vkGetPhysicalDeviceSurfaceSupportKHR(device, i, window.surface, &presentSupport);
 
             if (presentSupport)
             {
