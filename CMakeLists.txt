@@ -21,7 +21,9 @@ ENDIF ()
 
 add_subdirectory(shaders)
 
-add_executable(VulkanGame src/main.cpp)
+add_executable(VulkanGame
+        src/main.cpp
+        src/debug.cpp)
 
 target_include_directories(VulkanGame PUBLIC ${Vulkan_INCLUDE_DIRS})
 
