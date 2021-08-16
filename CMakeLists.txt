@@ -11,6 +11,8 @@ ELSE ()
 ENDIF ()
 
 find_package(Vulkan REQUIRED)
+find_package (Eigen3 REQUIRED)
+find_package (glm REQUIRED)
 # find_package(SFML REQUIRED network audio)
 
 IF (WIN32)
@@ -27,5 +29,5 @@ add_executable(VulkanGame
 
 target_include_directories(VulkanGame PUBLIC ${Vulkan_INCLUDE_DIRS})
 
-target_link_libraries(VulkanGame ${Vulkan_LIBRARIES} glfw shaders)
+target_link_libraries(VulkanGame ${Vulkan_LIBRARIES} glfw shaders glm)
 # target_link_libraries(VulkanGame ${SFML_LIBRARIES})
