@@ -11,8 +11,8 @@ ELSE ()
 ENDIF ()
 
 find_package(Vulkan REQUIRED)
-find_package (Eigen3 REQUIRED)
-find_package (glm REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(glm REQUIRED)
 # find_package(SFML REQUIRED network audio)
 
 IF (WIN32)
@@ -25,7 +25,7 @@ add_subdirectory(shaders)
 
 add_executable(VulkanGame
         src/main.cpp
-        src/debug.cpp src/window.cpp src/window.hpp)
+        src/debug.cpp src/window.cpp src/object.cpp)
 
 target_include_directories(VulkanGame PUBLIC ${Vulkan_INCLUDE_DIRS})
 
