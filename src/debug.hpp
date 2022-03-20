@@ -1,6 +1,7 @@
 //
 // Created by jorge on 8/8/2021.
 //
+#pragma once
 
 #include <vulkan/vulkan_core.h>
 

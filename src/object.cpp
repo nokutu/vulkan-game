@@ -7,13 +7,14 @@
 #include <stdexcept>
 #include <vector>
 
-uint32_t
-findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysicalDevice physicalDevice)
+std::uint32_t findMemoryType(
+  std::uint32_t typeFilter,
+  vk::MemoryPropertyFlags properties,
+  vk::PhysicalDevice physicalDevice)
 {
-    VkPhysicalDeviceMemoryProperties memProperties;
-    vkGetPhysicalDeviceMemoryProperties(physicalDevice, &memProperties);
+    vk::PhysicalDeviceMemoryProperties memProperties = physicalDevice.getMemoryProperties();
 
-    for (uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
+    for (std::uint32_t i = 0; i < memProperties.memoryTypeCount; i++)
     {
         if (
           (typeFilter & (1 << i)) && (memProperties.memoryTypes[i].propertyFlags & properties) == properties)
@@ -25,43 +26,36 @@ findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties, VkPhysical
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-Object::Object(VkDevice device, VkPhysicalDevice physicalDevice, std::vector<Vertex> vertices)
+Object::Object(vk::Device device, vk::PhysicalDevice physicalDevice, std::vector<Vertex> vertices)
   : _device(device)
   , _vertices(std::move(vertices))
 {
-    VkBufferCreateInfo bufferInfo{};
-    bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-    bufferInfo.size = sizeof(_vertices[0]) * _vertices.size();
-    bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-    bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+    vk::BufferCreateInfo bufferInfo(
+      vk::BufferCreateFlags(),
+      sizeof(_vertices[0]) * _vertices.size(),
+      vk::BufferUsageFlagBits::eVertexBuffer,
+      vk::SharingMode::eExclusive);
+    bufferInfo.sType = vk::StructureType::eBufferCreateInfo;
 
-    if (vkCreateBuffer(_device, &bufferInfo, nullptr, &_vertexBuffer) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to create vertex buffer!");
-    }
+    _vertexBuffer = _device.createBuffer(bufferInfo, nullptr);
 
-    VkMemoryRequirements memRequirements;
-    vkGetBufferMemoryRequirements(_device, _vertexBuffer, &memRequirements);
+    vk::MemoryRequirements memRequirements = _device.getBufferMemoryRequirements(_vertexBuffer);
 
-    VkMemoryAllocateInfo allocInfo{};
-    allocInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    vk::MemoryAllocateInfo allocInfo{};
+    allocInfo.sType = vk::StructureType::eMemoryAllocateInfo;
     allocInfo.allocationSize = memRequirements.size;
     allocInfo.memoryTypeIndex = findMemoryType(
       memRequirements.memoryTypeBits,
-      VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+      vk::MemoryPropertyFlagBits::eHostVisible | vk::MemoryPropertyFlagBits::eHostCoherent,
       physicalDevice);
 
-    if (vkAllocateMemory(_device, &allocInfo, nullptr, &_vertexBufferMemory) != VK_SUCCESS)
-    {
-        throw std::runtime_error("failed to allocate vertex buffer memory!");
-    }
+    _vertexBufferMemory = _device.allocateMemory(allocInfo, nullptr);
 
-    vkBindBufferMemory(_device, _vertexBuffer, _vertexBufferMemory, 0);
+    _device.bindBufferMemory(_vertexBuffer, _vertexBufferMemory, 0);
 
-    void* data;
-    vkMapMemory(_device, _vertexBufferMemory, 0, bufferInfo.size, 0, &data);
-    memcpy(data, _vertices.data(), (size_t)bufferInfo.size);
-    vkUnmapMemory(_device, _vertexBufferMemory);
+    void* data = _device.mapMemory(_vertexBufferMemory, 0, bufferInfo.size, vk::MemoryMapFlags());
+    memcpy(data, _vertices.data(), static_cast<std::size_t>(bufferInfo.size));
+    _device.unmapMemory(_vertexBufferMemory);
 }
 
 Object::Object(Object&& other) noexcept
@@ -95,12 +89,12 @@ Object::~Object()
     destroy();
 }
 
-void Object::bind(VkCommandBuffer& commandBuffer)
+void Object::bind(vk::CommandBuffer& commandBuffer)
 {
-    VkBuffer vertexBuffers[] = { _vertexBuffer };
-    VkDeviceSize offsets[] = { 0 };
-    vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
-    vkCmdDraw(commandBuffer, static_cast<uint32_t>(_vertices.size()), 1, 0, 0);
+    vk::Buffer vertexBuffers[] = { _vertexBuffer };
+    vk::DeviceSize offsets[] = { 0 };
+    commandBuffer.bindVertexBuffers(0, 1, vertexBuffers, offsets);
+    commandBuffer.draw(static_cast<std::uint32_t>(_vertices.size()), 1, 0, 0);
 }
 
 void Object::clear()
@@ -113,10 +107,10 @@ void Object::clear()
 
 void Object::destroy()
 {
-    if (_device != nullptr)
+    if (_device)
     {
-        vkDestroyBuffer(_device, _vertexBuffer, nullptr);
-        vkFreeMemory(_device, _vertexBufferMemory, nullptr);
+        _device.destroyBuffer(_vertexBuffer);
+        _device.freeMemory(_vertexBufferMemory);
         clear();
     }
 }

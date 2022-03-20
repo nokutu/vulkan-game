@@ -5,34 +5,34 @@
 
 #include <array>
 
-#include <glm/glm.hpp>
+#include <Eigen/Eigen>
 
 struct Vertex
 {
-    glm::vec2 pos;
-    glm::vec3 color;
+    Eigen::Vector2f pos;
+    Eigen::Vector3f color;
 
-    static VkVertexInputBindingDescription getBindingDescription()
+    static vk::VertexInputBindingDescription getBindingDescription()
     {
-        VkVertexInputBindingDescription bindingDescription{};
+        vk::VertexInputBindingDescription bindingDescription{};
         bindingDescription.binding = 0;
         bindingDescription.stride = sizeof(Vertex);
-        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+        bindingDescription.inputRate = vk::VertexInputRate::eVertex;
 
         return bindingDescription;
     }
 
-    static std::array<VkVertexInputAttributeDescription, 2> getAttributeDescriptions()
+    static std::array<vk::VertexInputAttributeDescription, 2> getAttributeDescriptions()
     {
-        std::array<VkVertexInputAttributeDescription, 2> attributeDescriptions{};
+        std::array<vk::VertexInputAttributeDescription, 2> attributeDescriptions{};
         attributeDescriptions[0].binding = 0;
         attributeDescriptions[0].location = 0;
-        attributeDescriptions[0].format = VK_FORMAT_R32G32_SFLOAT;
+        attributeDescriptions[0].format = vk::Format::eR32G32Sfloat;
         attributeDescriptions[0].offset = offsetof(Vertex, pos);
 
         attributeDescriptions[1].binding = 0;
         attributeDescriptions[1].location = 1;
-        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[1].format = vk::Format::eR32G32B32Sfloat;
         attributeDescriptions[1].offset = offsetof(Vertex, color);
 
         return attributeDescriptions;

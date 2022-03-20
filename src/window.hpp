@@ -6,12 +6,13 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <tuple>
+#include <vulkan/vulkan.hpp>
 
 class Window
 {
 public:
     void init();
-    void createSurface(VkInstance& instance);
+    void createSurface(vk::Instance& instance);
     bool shouldClose();
     void pollEvents();
     void destroy();

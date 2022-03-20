@@ -31,7 +31,7 @@ void Window::destroy()
     glfwTerminate();
 }
 
-void Window::createSurface(VkInstance& instance)
+void Window::createSurface(vk::Instance& instance)
 {
     if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
     {

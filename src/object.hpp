@@ -5,17 +5,16 @@
 
 #include <vector>
 
-#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.hpp>
 
 #include "vertex.hpp"
 
 class Object
 {
 private:
-    VkDevice _device = nullptr;
-
-    VkBuffer _vertexBuffer = nullptr;
-    VkDeviceMemory _vertexBufferMemory = nullptr;
+    vk::Device _device = nullptr;
+    vk::Buffer _vertexBuffer = nullptr;
+    vk::DeviceMemory _vertexBufferMemory = nullptr;
 
     std::vector<Vertex> _vertices;
 
@@ -23,11 +22,11 @@ private:
 
 public:
     Object() = default;
-    explicit Object(VkDevice device, VkPhysicalDevice physicalDevice, std::vector<Vertex> vertices);
+    explicit Object(vk::Device device, vk::PhysicalDevice physicalDevice, std::vector<Vertex> vertices);
     Object(Object&& other) noexcept;
     Object& operator=(Object&& other) noexcept;
 
-    void bind(VkCommandBuffer& commandBuffer);
+    void bind(vk::CommandBuffer& commandBuffer);
     void destroy();
 
     ~Object();
