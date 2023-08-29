@@ -3,9 +3,12 @@
 //
 
 #include "window.hpp"
+
 #include <stdexcept>
 
-void Window::init()
+#include <fmt/core.h>
+
+Window::Window()
 {
     glfwInit();
 
@@ -13,6 +16,12 @@ void Window::init()
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
+}
+
+Window::~Window()
+{
+    glfwDestroyWindow(window);
+    glfwTerminate();
 }
 
 bool Window::shouldClose()
@@ -25,18 +34,15 @@ void Window::pollEvents()
     glfwPollEvents();
 }
 
-void Window::destroy()
+void Window::createSurface(const vk::raii::Instance& instance)
 {
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}
-
-void Window::createSurface(vk::Instance& instance)
-{
-    if (glfwCreateWindowSurface(instance, window, nullptr, &surface) != VK_SUCCESS)
+    VkResult result;
+    VkSurfaceKHR ptr;
+    if ((result = glfwCreateWindowSurface(*instance, window, nullptr, &ptr)) != VK_SUCCESS)
     {
-        throw std::runtime_error("failed to create window surface!");
+        throw std::runtime_error(fmt::format("Error creating GLFW window: {}", static_cast<int>(result)));
     }
+    surface = vk::raii::SurfaceKHR(instance, ptr);
 }
 
 std::tuple<int, int> Window::getFramebufferSize()

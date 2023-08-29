@@ -6,28 +6,23 @@
 #include <vector>
 
 #include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp>
 
 #include "vertex.hpp"
 
 class Object
 {
 private:
-    vk::Device _device = nullptr;
-    vk::Buffer _vertexBuffer = nullptr;
-    vk::DeviceMemory _vertexBufferMemory = nullptr;
+    vk::raii::Buffer _vertexBuffer = nullptr;
+    vk::raii::DeviceMemory _vertexBufferMemory = nullptr;
 
     std::vector<Vertex> _vertices;
 
-    void clear();
-
 public:
     Object() = default;
-    explicit Object(vk::Device device, vk::PhysicalDevice physicalDevice, std::vector<Vertex> vertices);
+    explicit Object(const vk::raii::Device& device, const vk::raii::PhysicalDevice& physicalDevice, std::vector<Vertex> vertices);
     Object(Object&& other) noexcept;
     Object& operator=(Object&& other) noexcept;
 
-    void bind(vk::CommandBuffer& commandBuffer);
-    void destroy();
-
-    ~Object();
+    void bind(vk::raii::CommandBuffer& commandBuffer);
 };

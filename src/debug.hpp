@@ -3,15 +3,16 @@
 //
 #pragma once
 
-#include <vulkan/vulkan_core.h>
+#include <vulkan/vulkan.hpp>
+#include <vulkan/vulkan_raii.hpp>
 
 class DebugMessenger
 {
 public:
-    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo);
-    void setupDebugMessenger(VkInstance& instance);
-    void destroy(VkInstance& instance, const VkAllocationCallbacks* pAllocator);
+    static void populateDebugMessengerCreateInfo(vk::DebugUtilsMessengerCreateInfoEXT& createInfo);
+    void setupDebugMessenger(const vk::Instance& instance);
+    void destroy(const vk::Instance& instance, const vk::AllocationCallbacks* pAllocator);
 
 private:
-    VkDebugUtilsMessengerEXT debugMessenger;
+    vk::DebugUtilsMessengerEXT debugMessenger;
 };

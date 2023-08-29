@@ -5,15 +5,14 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 IF (WIN32)
-    add_compile_options(/GX)
+    add_compile_options(/EHsc)
 ELSE ()
     add_compile_options(-fexceptions)
 ENDIF ()
 
 find_package(Vulkan REQUIRED)
-find_package(Eigen3 REQUIRED)
-find_package(glm REQUIRED)
 # find_package(SFML REQUIRED network audio)
+find_package(fmt REQUIRED)
 
 IF (WIN32)
     add_subdirectory(C:/src/glfw-3.3.4 glfw)
@@ -27,7 +26,7 @@ add_executable(VulkanGame
         src/main.cpp
         src/debug.cpp src/window.cpp src/object.cpp)
 
-target_include_directories(VulkanGame PUBLIC ${Vulkan_INCLUDE_DIRS})
+target_include_directories(VulkanGame PUBLIC ${Vulkan_INCLUDE_DIRS} C:/src/eigen)
 
-target_link_libraries(VulkanGame ${Vulkan_LIBRARIES} glfw shaders glm)
+target_link_libraries(VulkanGame ${Vulkan_LIBRARIES} glfw shaders fmt::fmt)
 # target_link_libraries(VulkanGame ${SFML_LIBRARIES})
