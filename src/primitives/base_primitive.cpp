@@ -1,8 +1,9 @@
 //
-// Created by nokutu on 16/8/21.
+// Created by jorge on 05/09/2023.
 //
 
-#include "object.hpp"
+#include "base_primitive.hpp"
+
 #include <cstring>
 #include <stdexcept>
 #include <vector>
@@ -26,7 +27,7 @@ std::uint32_t findMemoryType(
     throw std::runtime_error("failed to find suitable memory type!");
 }
 
-Object::Object(
+vkengine::primitives::BasePrimitive::BasePrimitive(
   const vk::raii::Device& device,
   const vk::raii::PhysicalDevice& physicalDevice,
   std::vector<Vertex> vertices)
@@ -60,7 +61,7 @@ Object::Object(
     _vertexBufferMemory.unmapMemory();
 }
 
-Object::Object(Object&& other) noexcept
+vkengine::primitives::BasePrimitive::BasePrimitive(BasePrimitive&& other) noexcept
 {
     _vertexBuffer = std::move(other._vertexBuffer);
     _vertexBufferMemory = std::move(other._vertexBufferMemory);
@@ -68,7 +69,7 @@ Object::Object(Object&& other) noexcept
     _vertices = std::move(other._vertices);
 }
 
-Object& Object::operator=(Object&& other) noexcept
+vkengine::primitives::BasePrimitive& vkengine::primitives::BasePrimitive::operator=(BasePrimitive&& other) noexcept
 {
     _vertexBuffer = std::move(other._vertexBuffer);
     _vertexBufferMemory = std::move(other._vertexBufferMemory);
@@ -78,7 +79,7 @@ Object& Object::operator=(Object&& other) noexcept
     return *this;
 }
 
-void Object::bind(vk::raii::CommandBuffer& commandBuffer) const
+void vkengine::primitives::BasePrimitive::bind(vk::raii::CommandBuffer& commandBuffer) const
 {
     std::array<vk::Buffer, 1> vertexBuffers = { *_vertexBuffer };
     std::array<vk::DeviceSize, 1> offsets = { 0 };

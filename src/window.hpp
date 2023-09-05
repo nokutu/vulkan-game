@@ -6,21 +6,19 @@
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
 #include <tuple>
-#include <vulkan/vulkan.hpp>
 #include <vulkan/vulkan_raii.hpp>
 
 class Window
 {
 public:
-    void createSurface(const vk::raii::Instance& instance);
-    bool shouldClose();
+    Window(const vk::raii::Instance& instance);
+    ~Window();
+
+    bool shouldClose() const;
     void pollEvents();
-    std::tuple<int, int> getFramebufferSize();
+    std::tuple<int, int> getFramebufferSize() const;
 
     vk::raii::SurfaceKHR surface = nullptr;
-
-    Window();
-    ~Window();
 
 private:
     static constexpr size_t WIDTH = 800;

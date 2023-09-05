@@ -8,7 +8,7 @@
 
 #include <fmt/core.h>
 
-Window::Window()
+Window::Window(const vk::raii::Instance& instance)
 {
     glfwInit();
 
@@ -16,26 +16,7 @@ Window::Window()
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 
     window = glfwCreateWindow(WIDTH, HEIGHT, "Vulkan", nullptr, nullptr);
-}
 
-Window::~Window()
-{
-    glfwDestroyWindow(window);
-    glfwTerminate();
-}
-
-bool Window::shouldClose()
-{
-    return glfwWindowShouldClose(window);
-}
-
-void Window::pollEvents()
-{
-    glfwPollEvents();
-}
-
-void Window::createSurface(const vk::raii::Instance& instance)
-{
     VkResult result;
     VkSurfaceKHR ptr;
     if ((result = glfwCreateWindowSurface(*instance, window, nullptr, &ptr)) != VK_SUCCESS)
@@ -45,7 +26,23 @@ void Window::createSurface(const vk::raii::Instance& instance)
     surface = vk::raii::SurfaceKHR(instance, ptr);
 }
 
-std::tuple<int, int> Window::getFramebufferSize()
+Window::~Window()
+{
+    glfwDestroyWindow(window);
+    glfwTerminate();
+}
+
+bool Window::shouldClose() const
+{
+    return glfwWindowShouldClose(window);
+}
+
+void Window::pollEvents()
+{
+    glfwPollEvents();
+}
+
+std::tuple<int, int> Window::getFramebufferSize() const
 {
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);

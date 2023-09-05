@@ -1,16 +1,14 @@
 //
-// Created by nokutu on 16/8/21.
+// Created by jorge on 05/09/2023.
 //
 #pragma once
 
-#include <vector>
+#include "../vertex.hpp"
 
-#include <vulkan/vulkan.hpp>
-#include <vulkan/vulkan_raii.hpp>
+namespace vkengine::primitives
+{
 
-#include "vertex.hpp"
-
-class Object
+class BasePrimitive
 {
 private:
     vk::raii::Buffer _vertexBuffer = nullptr;
@@ -19,13 +17,15 @@ private:
     std::vector<Vertex> _vertices;
 
 public:
-    Object() = default;
-    explicit Object(
+    BasePrimitive() = default;
+    BasePrimitive(
       const vk::raii::Device& device,
       const vk::raii::PhysicalDevice& physicalDevice,
       std::vector<Vertex> vertices);
-    Object(Object&& other) noexcept;
-    Object& operator=(Object&& other) noexcept;
+
+    BasePrimitive(BasePrimitive&& other) noexcept;
+    BasePrimitive& operator=(BasePrimitive&& other) noexcept;
 
     void bind(vk::raii::CommandBuffer& commandBuffer) const;
 };
+}
